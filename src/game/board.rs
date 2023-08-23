@@ -10,6 +10,8 @@ use maze_generator::prelude::{Coordinates, Direction as MazeDirection, Maze};
 const PLAN_SIZE: f32 = 5.;
 const BORDER_HEIGHT: f32 = 0.3;
 const ANGLE_INCREMENT: f32 = PI / 720.;
+const GAMEPAD_DEAD_ZONE: f32 = 0.2;
+const GAMEPAD_SPEED_MULTIPLIER: f32 = 1.8;
 
 #[derive(Component)]
 pub(crate) struct Floor;
@@ -183,7 +185,7 @@ pub(crate) fn setup_board(
                         let goal = commands
                             .spawn(PbrBundle {
                                 mesh: meshes.add(mesh),
-                                material: materials.add(Color::rgba(0., 1., 0., 0.7).into()),
+                                material: materials.add(Color::rgba(0., 1., 0., 0.3).into()),
                                 transform: Transform::from_translation(Vec3::new(
                                     x_position + x_length / 2.,
                                     BORDER_HEIGHT / 2.,
@@ -255,7 +257,35 @@ pub(crate) fn setup_board(
     commands.entity(floor).add_child(top);
 }
 
-pub(crate) fn handle_input(
+pub(crate) fn handle_gamepad_input(
+    gamepads: Res<Gamepads>,
+    axes: Res<Axis<GamepadAxis>>,
+    mut floor: Query<&mut Transform, (With<Floor>, Without<Wall>)>,
+) {
+    if let Ok(mut floor) = floor.get_single_mut() {
+        for gamepad in gamepads.iter() {
+            // Rotation around X axis (when we move up and down => gamepad Y axis)
+            let left_stick_y = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickY))
+                .unwrap_or_default();
+            if !(-GAMEPAD_DEAD_ZONE..=GAMEPAD_DEAD_ZONE).contains(&left_stick_y) {
+                let angle_x = left_stick_y * ANGLE_INCREMENT * GAMEPAD_SPEED_MULTIPLIER;
+                floor.rotate_local_x(-angle_x);
+            }
+
+            // Rotation around Z axis (when we move left and right => gamepad X axis)
+            let left_stick_x = axes
+                .get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX))
+                .unwrap_or_default();
+            if !(-GAMEPAD_DEAD_ZONE..=GAMEPAD_DEAD_ZONE).contains(&left_stick_x) {
+                let angle_z = left_stick_x * ANGLE_INCREMENT * GAMEPAD_SPEED_MULTIPLIER;
+                floor.rotate_local_z(-angle_z);
+            }
+        }
+    }
+}
+
+pub(crate) fn handle_keyboard_input(
     keyboard: Res<Input<KeyCode>>,
     mut floor: Query<&mut Transform, (With<Floor>, Without<Wall>)>,
 ) {

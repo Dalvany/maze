@@ -16,7 +16,14 @@ pub(crate) struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::Game), board::setup_board)
-            .add_systems(Update, board::handle_input.run_if(in_state(AppState::Game)))
+            .add_systems(
+                Update,
+                board::handle_keyboard_input.run_if(in_state(AppState::Game)),
+            )
+            .add_systems(
+                Update,
+                board::handle_gamepad_input.run_if(in_state(AppState::Game)),
+            )
             .add_systems(
                 Update,
                 board::detect_end_game.run_if(in_state(AppState::Game)),
