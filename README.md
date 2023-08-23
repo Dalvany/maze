@@ -2,7 +2,7 @@
 
 Simple maze game using [Bevy](https://bevyengine.org/) and [Rapier](https://rapier.rs/).
 
-It have 4 maze generation algorithm from [maze_generator](https://crates.io/crates/maze_generator) crate but they are not (yet?) selectable.
+It has 4 maze generation algorithm from [maze_generator](https://crates.io/crates/maze_generator) crate but they are not (yet?) selectable.
 
 You can try it out [here](https://dalvany.github.io/maze/).
 

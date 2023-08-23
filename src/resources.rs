@@ -53,14 +53,26 @@ impl TryFrom<&MazeConfig> for Maze {
     type Error = anyhow::Error;
 
     fn try_from(value: &MazeConfig) -> Result<Self, Self::Error> {
+        // Seeds using getrandom crate with JS feature enable
+        // for wasm in JS environment to work.
+        #[cfg(feature = "js")]
+        let seed = {
+            let mut buf = [0u8; 32];
+            getrandom::getrandom(&mut buf).map_err(|err| anyhow::Error::msg(err.to_string()))?;
+            Some(buf)
+        };
+        // Otherwise don't bother
+        #[cfg(not(feature = "js"))]
+        let seed = None;
+
         match value.algorithm {
-            Algorithm::Ellers => EllersGenerator::new(None).generate(value.width, value.height),
+            Algorithm::Ellers => EllersGenerator::new(seed).generate(value.width, value.height),
             Algorithm::GrowingTree => {
-                GrowingTreeGenerator::new(None).generate(value.width, value.height)
+                GrowingTreeGenerator::new(seed).generate(value.width, value.height)
             }
-            Algorithm::Prims => PrimsGenerator::new(None).generate(value.width, value.height),
+            Algorithm::Prims => PrimsGenerator::new(seed).generate(value.width, value.height),
             Algorithm::RecursiveBacktracking => {
-                RbGenerator::new(None).generate(value.width, value.height)
+                RbGenerator::new(seed).generate(value.width, value.height)
             }
         }
     }

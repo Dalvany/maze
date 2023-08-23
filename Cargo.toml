@@ -27,7 +27,7 @@ lto = "thin"
 debug = ["diagnostic", "inspector", "bevy_rapier3d/debug-render-3d"]
 inspector = ["dep:bevy-inspector-egui"]
 diagnostic = []
-js = ["maze_generator/js"]
+js = ["dep:getrandom", "getrandom/js"]
 
 [dependencies]
 maze_generator = "2.0.1-next"
@@ -37,5 +37,8 @@ anyhow = "1.0"
 log = "0.4"
 bevy-inspector-egui = { version = "0.19", optional = true }
 
+[target.wasm32-unknown-unknown.dependencies]
+getrandom = { version = "0.2", optional = true }
+
 [patch.crates-io]
-maze_generator = { git = 'https://github.com/Dalvany/maze_generator.git', branch = "wasm_support" }
+maze_generator = { git = 'https://github.com/Dalvany/maze_generator.git', branch = "fix_ellers_algorithm" }
